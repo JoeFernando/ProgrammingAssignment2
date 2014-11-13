@@ -21,8 +21,7 @@ makeCacheMatrix <- function(sm = matrix ()) {   # input "sm" will be a square ma
   
   
   
-  # note these next four functions are not run when makeCacheMatrix is 
-  # called
+  # note these next four functions are not run when makeCacheMatrix is called
   # instead, they will be used by "cacheSolve"  to get values for "sm" or for
   # "iv" and for setting the inverse matrix  
   # These are usually called object 'methods'
@@ -31,7 +30,7 @@ makeCacheMatrix <- function(sm = matrix ()) {   # input "sm" will be a square ma
   setnewsm <- function(y) {     #" setnewsm " function gives the user the ability to
     sm <<- y                    # to insert a new matrix without re-running "makeCacheMatrix"
     iv <<- NULL                 # essentially, the new matrix "y" over-writes "sm" and re-initiates "iv" 
-  }                             # note the "<<" operator updates objects outside of the "set" function
+  }                             # note the "<<" superassignment updates objects outside of the "setnewsm" function
   
   
   
@@ -39,7 +38,7 @@ makeCacheMatrix <- function(sm = matrix ()) {   # input "sm" will be a square ma
   
   
   # setinversefun below is called by cacheSolve during the first cacheSolve access  
-  # and it will store the value using superassignment
+  # and it will store the inverse matrix using superassignment
   # another syntax: setinverse <- function(storeValue)  iv <<- storeValue
   
   setinversefun <- function(storeValue){  
@@ -50,8 +49,8 @@ makeCacheMatrix <- function(sm = matrix ()) {   # input "sm" will be a square ma
   getinversefun <- function() iv  #this is the cache into which the calculated inverse matrix is held
   
   
-  # The "list" below is initiated via the "makeCacheMatrix" function
-  # The "list" is used to hold the four functions
+  # The "list" below is initiated via the "makeCacheMatrix" function and used to hold the four functions
+  # It is from this list cacheSolve and users pull functions
   # if you take out the list, then it returns an error "object of type 'closure' is not subsettable"
   
   list(set = setnewsm,  get = getfun,  setinverse = setinversefun,   getinverse = getinversefun)
