@@ -1,12 +1,8 @@
-## Put comments here that give an overall description of what your
-## functions do
-
 ## The Function code below is for Programming Assignment 2 for R Programming conducted by Coursera
 
-## There are two finctions defined below "makeCacheMatrix" and "cacheSolve". The objective of these 
+## There are two functions defined below "makeCacheMatrix" and "cacheSolve". The objective of these 
 ## two functions is to calculate the inverse of a square matrix and to store it in cache, 
 ## so that the inverse calculation is done only once
-
 
 
 
@@ -18,62 +14,147 @@
 # 4) get the value of the mean
 
 
-
-makeCacheMatrix <- function(x = matrix()) {
+makeCacheMatrix <- function(sm = matrix ()) {   # input "sm" will be a square matrix that is invertible
   
-  m <- NULL                    #empty vector to store the inverse of the square matrix
+  iv <- NULL  	#  "iv" will be the 'inverse matrix' and it's reset to NULL               
+               #  every time "makeCacheMatrix" is called
   
-  set <- function(y) {         #re-initialises "x" and "m"
-    
-    x <<- y
-    
-    m <<- NULL
-    
+  
+  
+  # note these next four functions are not run when makeCacheMatrix is 
+  # called
+  # instead, they will be used by "cacheSolve"  to get values for "sm" or for
+  # "iv" and for setting the inverse matrix  
+  # These are usually called object 'methods'
+  
+  
+  setnewsm <- function(y) {     #" setnewsm " function gives the user the ability to
+    sm <<- y                    # to insert a new matrix without re-running "makeCacheMatrix"
+    iv <<- NULL                 # essentially, the new matrix "y" over-writes "sm" and re-initiates "iv" 
+  }                             # note the "<<" operator updates objects outside of the "set" function
+  
+  
+  
+  getfun <- function() sm       #stores the "sm" matrix in function "getfun"
+  
+  
+  # setinversefun below is called by cacheSolve during the first cacheSolve access  
+  # and it will store the value using superassignment
+  # another syntax: setinverse <- function(storeValue)  iv <<- storeValue
+  
+  setinversefun <- function(storeValue){  
+    iv <<- storeValue                     
   }
   
-  get <- function() x                         # Original square matrix is stored in "get"
   
-  setinverse <- function(solve) m <<- solve   # Calculates the inverse of a square matrix
+  getinversefun <- function() iv  #this is the cache into which the calculated inverse matrix is held
   
-  getinverse <- function() m                  # stores the calcualted value into "getinverse"
   
-  list(set = set, get = get,                  # List to hold the 4 objects in this function
-       
-       setinverse = setinverse,
-       
-       getinverse = getinverse)
+  # The "list" below is initiated via the "makeCacheMatrix" function
+  # The "list" is used to hold the four functions
+  # if you take out the list, then it returns an error "object of type 'closure' is not subsettable"
+  
+  list(set = setnewsm,  get = getfun,  setinverse = setinversefun,   getinverse = getinversefun)
+  
   
 }
 
 
+###########################################################################################################
 
-## Write a short comment describing this function
+## cacheSolve: This function computes the inverse of the special "matrix" returned by makeCacheMatrix above. 
+## If the inverse has already been calculated (and the matrix has not changed), then the cachesolve will 
+## retrieve the inverse from the cache.
 
 
 
 
-cacheSolve <- function(x, ...) {
+cacheSolve <- function(sm, ...) {   # the input is an object created by makeCacheMatrix
+  
+  iv <- sm$getinverse()     # accesses the object 'sm' and gets the inverse matrix stored in "getinverse"
+  
+  if(!is.null(iv)) {        # checks if the inverse matrix has already been cached
     
-    m <- x$getinverse()
     
-    if(!is.null(m)) {
-      
-      message("getting cached data")
-      
-      return(m)
-      
-    }
+    message("getting cached data")       # if "yes" then displays a message and returns the 
+    return(iv)                           # inverse matrix and exits the function
     
-    data <- x$get()
-    
-    m <- solve(data, ...)
-    
-    x$setinverse(m)
-    
-    m
-    
-  }  
+  }
   
   
-        ## Return a matrix that is the inverse of 'x'
+  #If the cache does not hold the data, then it is computed, stored in cache and then value returned 
+  
+  data <- sm$get()            #get the value of the square matrix and stores in "data"
+  iv <- solve(data, ...)      # calculates the inverse matrix and stores it to "iv"
+  sm$setinverse(iv)           #store the calculated inverse matrix 
+  iv                          # return the value of the inverse matrix and also exits the function
+}
+
+
+  
+############################################################################################################  
+
+
+## the input below runs the above two functions to check for accuracy
+## taken from "Hints for Programming Assignment 2 - Lexical Scoping"
+
+
+amatrix = makeCacheMatrix(matrix(c(1,2,3,4), nrow=2, ncol=2))
+amatrix$get()
+
+cacheSolve(amatrix)
+amatrix$getinverse()
+cacheSolve(amatrix)
+
+amatrix$set(matrix(c(0,5,99,66), nrow=2, ncol=2))
+cacheSolve(amatrix)
+
+amatrix$get()
+amatrix$getinverse()
+
+
+##################################################################################
+
+
+### Output Example
+
+>    source("cachematrix.R")
+
+>    amatrix = makeCacheMatrix(matrix(c(1,2,3,4), nrow=2, ncol=2))
+>    amatrix$get()         # Returns original matrix
+[,1] [,2]
+[1,]    1    3
+[2,]    2    4
+
+>   cacheSolve(amatrix)   # Computes, caches, and returns    matrix inverse
+[,1] [,2]
+[1,]   -2  1.5
+[2,]    1 -0.5
+
+>  amatrix$getinverse()  # Returns matrix inverse
+[,1] [,2]
+[1,]   -2  1.5
+[2,]    1 -0.5
+
+>  cacheSolve(amatrix)   # Returns cached matrix inverse using previously computed matrix inverse
+getting cached data
+[,1] [,2]
+[1,]   -2  1.5
+[2,]    1 -0.5
+
+>    amatrix$set(matrix(c(0,5,99,66), nrow=2, ncol=2)) # Modify existing matrix
+>    cacheSolve(amatrix)   # Computes, caches, and returns new matrix inverse
+[,1] [,2]
+[1,] -0.13333333  0.2
+[2,]  0.01010101  0.0
+
+>    amatrix$get()         # Returns matrix
+[,1] [,2]
+[1,]    0   99
+[2,]    5   66
+
+>    amatrix$getinverse()  # Returns matrix inverse
+[,1] [,2]
+[1,] -0.13333333  0.2
+[2,]  0.01010101  0.0
 
