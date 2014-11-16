@@ -50,7 +50,7 @@ makeCacheMatrix <- function(sm = matrix ()) {   # input "sm" will be a square ma
   
   
   # The "list" below is initiated via the "makeCacheMatrix" function and used to hold the four functions
-  # It is from this list cacheSolve and users pull functions
+  # cacheSolve and user access the stored functions from this list
   # if you take out the list, then it returns an error "object of type 'closure' is not subsettable"
   
   list(set = setnewsm,  get = getfun,  setinverse = setinversefun,   getinverse = getinversefun)
